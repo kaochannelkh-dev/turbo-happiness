@@ -76,6 +76,9 @@ if ($newBalance < 0) $newBalance = 0;
 $ok = update_user_balance($mysqli, intval($userRow['id']), $newBalance);
 if (!$ok) { echo json_encode(['ok'=>false,'error'=>'Failed to update balance']); exit; }
 
+// Update session balance to reflect the change
+$_SESSION['balance'] = $newBalance;
+
 // If override provided and differs from DB sum, optionally record an adjustment row to keep history (here we insert an ADJUSTMENT row)
 if ($total_bet_override !== null && $total_bet_override !== $new_total_bet_db) {
     $opts = json_encode(['adjustment_of' => $play_time, 'note' => 'total_bet_override'], JSON_UNESCAPED_UNICODE);

@@ -538,68 +538,50 @@ document.addEventListener('DOMContentLoaded', function(){
 		// cancel
 		document.getElementById('cancelEdit').addEventListener('click', function(){ ticketModal.style.display = 'none'; });
 
-		// save handler - update only client-side (no DB)
+		// save handler - send to server for persistence
 		document.getElementById('saveEdit').addEventListener('click', function(){
 			const formEl = document.getElementById('editPlayForm');
 			const fd = new FormData(formEl);
 
-			// Parse items from form data into structured object
-			const itemsObj = {};
-			for (const [k,v] of fd.entries()) {
-				const m = k.match(/^items\[(\d+)\]\[(.+)\]$/);
-				if (!m) continue;
-				const idxItem = Number(m[1]);
-				const field = m[2];
-				itemsObj[idxItem] = itemsObj[idxItem] || {};
-				itemsObj[idxItem][field] = v;
-			}
+			// Send the form data to edit_play.php
+			fetch('edit_play.php', {
+				method: 'POST',
+				body: fd
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.ok) {
+					// Update local play history with server response
+					const updatedPlay = data.play;
+					if (updatedPlay && window.PLAY_HISTORY && window.PLAY_HISTORY[idx]) {
+						window.PLAY_HISTORY[idx] = updatedPlay;
+					}
+					
+					// Update balance if provided
+					if (data.new_balance !== undefined) {
+						// Update balance display with proper formatting like in PHP
+						const balanceEl = document.querySelector('div[style*="font-size:12px;color:rgba(255,255,255,0.9)"]');
+						if (balanceEl) {
+							balanceEl.textContent = data.new_balance.toLocaleString() + '៛';
+						}
+						// Update session balance
+						if (typeof window !== 'undefined' && window.sessionStorage) {
+							window.sessionStorage.setItem('balance', data.new_balance);
+						}
+					}
 
-			// Build updated items array
-			const playsLocal = window.PLAY_HISTORY || [];
-			const play = playsLocal[idx];
-			if (!play) return;
-
-			const updatedItems = [];
-			const existingById = {};
-			(play.items || []).forEach(it => { if (it.db_id) existingById[String(it.db_id)] = it; });
-
-			Object.keys(itemsObj).sort((a,b)=>a-b).forEach(iStr => {
-				const it = itemsObj[iStr];
-				const db_id = it.db_id ? String(it.db_id) : '';
-				const label = it.label ? String(it.label).trim() : '';
-				const num_raw = it.num_raw ? String(it.num_raw).replace(/\D/g,'') : '';
-				const bet = parseInt(it.bet || '0', 10) || 0;
-				const win = (db_id && existingById[db_id] && Number(existingById[db_id].win)) ? Number(existingById[db_id].win) : 0;
-				updatedItems.push({
-					db_id: db_id || null,
-					num: num_raw ? String(num_raw).padStart(4,'0') : '',
-					num_raw: num_raw,
-					label: label,
-					bet: bet,
-					win: win
-				});
+					// Refresh UI and close modal
+					renderRecentList();
+					ticketModal.style.display = 'none';
+					alert('Successfully updated receipt and balance.');
+				} else {
+					alert('Error updating receipt: ' + (data.error || 'Unknown error'));
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				alert('Network error while updating receipt. Please try again.');
 			});
-
-			// compute totals from items as baseline
-			let computed_total_bet = updatedItems.reduce((s,it)=>s + (Number(it.bet)||0), 0);
-			let computed_total_win = updatedItems.reduce((s,it)=>s + (Number(it.win)||0), 0);
-
-			// Read Total Bet override (local only) and apply if provided and numeric
-			const totalBetOverrideRaw = fd.get('total_bet');
-			const totalBetOverride = totalBetOverrideRaw !== null ? parseInt(String(totalBetOverrideRaw).replace(/\D/g,''),10) : NaN;
-			const final_total_bet = (!isNaN(totalBetOverride)) ? totalBetOverride : computed_total_bet;
-
-			// apply to local play object and re-render (no server call)
-			window.PLAY_HISTORY[idx] = Object.assign({}, play, {
-				items: updatedItems,
-				total_bet: final_total_bet,
-				total_win: computed_total_win
-			});
-
-			// refresh UI and close modal
-			renderRecentList();
-			ticketModal.style.display = 'none';
-			alert('Updated locally (no DB change). Total Bet set to ' + fmtCurrency(final_total_bet));
 		});
 	}
 
@@ -1512,405 +1494,3 @@ document.addEventListener('DOMContentLoaded', function(){
 	renderCartPreview();
 	renderRecentList();
 }); // end DOMContentLoaded
-					chosen.value = '';
-					bet.value = '';
-					syncCartInput();
-					renderCartPreview();
-					return;
-				}
-			}
-			
-			// If we reach here, use the existing logic for standard input
-			const digits = raw.replace(/\D/g,'');
-			const label = raw.replace(/\d/g,'');
-			const b = parseInt(bet.value || '0',10) || 0;
-
-			// If there are digits, a bet is required
-			if (digits) {
-				if (b <= 0) {
-					alert('Enter a number (digits) and bet before adding');
-					return;
-				}
-				// store raw number (no added zeros) and also keep a padded version if needed
-				const num_raw = String(digits);
-				const num_padded = String(digits).padStart(4,'0').slice(-4);
-				
-				// Save the CURRENT multiplier preference with the cart item
-				cart.push({
-					num: num_raw, 
-					num_padded: num_padded, 
-					bet: b, 
-					label: label, 
-					opts: [],
-					useMultiplier: checkboxState,
-					shouldDisplayMultiplier: checkboxState // Freeze display state at time of addition
-				});
-			} else if (label) {
-				// Letters-only: allow adding without bet (bet = 0, num empty)
-				cart.push({
-					num: '', 
-					num_padded: '', 
-					bet: 0, 
-					label: label, 
-					opts: [],
-					useMultiplier: checkboxState,
-					shouldDisplayMultiplier: checkboxState // Freeze display state
-				});
-			} else {
-				// nothing meaningful entered
-				alert('Enter a number (digits) and bet before adding');
-				return;
-			}
-
-			// reset fields and update UI
-			chosen.value = '';
-			bet.value = '';
-			syncCartInput();
-			renderCartPreview();
-	
-
-	// Also enhance the chosen input to handle multiplier input when the user presses Enter
-	if (chosen) {
-		chosen.addEventListener('keydown', function(e) {
-			if (e.key === 'Enter') {
-				e.preventDefault(); // Prevent form submission
-				
-				const rawInput = chosen.value.trim();
-				
-				// Check for multiplier badge format
-				const parsedMultiplierInput = parseInputWithMultiplier(rawInput);
-				if (parsedMultiplierInput.valid && parsedMultiplierInput.digits) {
-					// Update bet field if it's empty
-					if (!bet.value || bet.value === '0') {
-						bet.value = '100'; // Default bet
-					}
-					
-					// Trigger add ticket
-					if (addBtn) addBtn.click();
-					return;
-				}
-				
-				// Check for separator format as fallback
-				if (rawInput.includes(':')) {
-					const parsedSeparatorInput = parseInputWithSeparator(rawInput);
-					if (parsedSeparatorInput.valid && parsedSeparatorInput.digits && parsedSeparatorInput.bet > 0) {
-						// Add to bet field for visual confirmation
-						bet.value = parsedSeparatorInput.bet;
-						
-						// Update the chosen field to keep only letters and digits
-						chosen.value = parsedSeparatorInput.letters + parsedSeparatorInput.digits;
-						
-						// Trigger add ticket
-						if (addBtn) addBtn.click();
-					}
-				}
-			}
-		});
-	}
-
-	// Update CSS for cart styling (replacing ticket-preview)
-	const style = document.createElement('style');
-	style.textContent = `
-		.active-input {
-			border-color: #4caf50 !important;
-			box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25) !important;
-		}
-		
-		/* Cart styling (formerly ticket-preview) */
-		.cart-preview {
-			max-width: 220px;
-			border: 2px solid #d6e6ff;
-			border-radius: 12px;
-			background: #fff;
-			color: #111;
-			overflow: hidden;
-		}
-		
-		.cart-empty {
-			min-height: 150px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			text-align: center;
-			border: 1px dashed #ccc;
-			border-radius: 12px;
-			background: #f9f9f9;
-			color: #888;
-		}
-		
-		.cart-header {
-			padding: 6px 8px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			border-bottom: 1px solid #eee;
-		}
-		
-		.cart-content {
-			padding: 8px 10px;
-		}
-		
-		.cart-label {
-			font-weight: 800;
-			font-size: 16px;
-			margin-bottom: 6px;
-		}
-		
-		.cart-item {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 4px 0;
-		}
-		
-		.cart-value {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			font-weight: 700;
-		}
-		
-		.cart-group-total {
-			text-align: right;
-			font-size: 13px;
-			color: #4caf50;
-			margin-top: 6px;
-		}
-		
-		.cart-footer {
-			padding: 8px 10px;
-			border-top: 1px solid #eee;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-		
-		/* Remaining existing styles... */
-		#input-focus-indicator {
-			position: absolute;
-			pointer-events: none;
-			border-radius: 4px;
-			z-index: 100;
-			transition: all 0.15s ease-out;
-		}
-		
-		#input-focus-indicator.number-active {
-		
-			border: 2px solid #2196f3;
-			box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
-		}
-		
-		#input-focus-indicator.number-active-x2d {
-			border: 2px solid #2196f3;
-			box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
-		}
-		
-		#input-focus-indicator.number-active-x2d::after {
-			content: "X2D";
-			position: absolute;
-			top: -20px;
-			left: 50%;
-			transform: translateX(-50%);
-			background: #2196f3;
-			color: white;
-			padding: 2px 6px;
-			border-radius: 3px;
-			font-size: 12px;
-			font-weight: bold;
-		}
-		
-		#input-focus-indicator.number-active-x3d {
-			border: 2px solid #2196f3;
-			box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
-		}
-		
-		#input-focus-indicator.number-active-x3d::after {
-			content: "X3D";
-			position: absolute;
-			top: -20px;
-			left: 50%;
-			transform: translateX(-50%);
-			background: #2196f3;
-			color: white;
-			padding: 2px 6px;
-			border-radius: 3px;
-			font-size: 12px;
-			font-weight: bold;
-		}
-		
-		#input-focus-indicator.bet-active {
-			border: 2px solid #4caf50;
-			box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
-		}
-		
-		.key {
-			transition: transform 0.12s ease, background-color 0.12s ease;
-		}
-		
-		.key[data-action="down"] {
-			position: relative;
-		}
-		
-		.key[data-action="down"]::after {
-			content: "";
-			position: absolute;
-			width: 80%;
-			height: 2px;
-			background: #fff;
-			bottom: 10px;
-			left: 10%;
-			box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-		}
-		
-		[data-mode="bet"] .key[data-func="bet-key"] {
-			background-color: rgba(76, 175, 80, 0.2);
-		}
-		
-		[data-mode="number"] .key[data-func="number-key"] {
-			background-color: rgba(33, 150, 243, 0.2);
-		}
-		
-		/* Refined topbar styling */
-	
-		
-		/* Add spacing below the fixed topbar */
-		main.container {
-			width: 100%;
-			max-width: 1080px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-		
-		/* For responsive behavior while maintaining minimum width */
-		@media (max-width: 1080px) {
-			body {
-				min-width: 1080px;
-				overflow-x: auto;
-			}
-		}
-	`;
-	document.head.appendChild(style);
-	
-	// Enhanced function to improve topbar appearance
-	function enhanceTopbar() {
-		const topbar = document.querySelector('.topbar');
-		if (!topbar) return;
-		
-		// If topbar already has the enhanced structure, skip
-		if (topbar.querySelector('.topbar-container')) return;
-		
-		// Create container for proper centering
-		const container = document.createElement('div');
-		container.className = 'topbar-container';
-		
-		// Create left section for back button and logo
-		const leftSection = document.createElement('div');
-		leftSection.className = 'topbar-left';
-		
-		// Find existing back button if any
-		const existingBack = topbar.querySelector('a.back');
-		if (existingBack) {
-			leftSection.appendChild(existingBack);
-		}
-		
-		// Create logo section
-		const logoSection = document.createElement('div');
-		logoSection.className = 'logo-section';
-		
-		// Find existing logo circle if any, otherwise create one
-		const existingLogo = topbar.querySelector('.logo-circle');
-		if (existingLogo) {
-			logoSection.appendChild(existingLogo);
-		} else {
-			const logoCircle = document.createElement('div');
-			logoCircle.className = 'logo-circle';
-			logoCircle.textContent = '8888';
-			logoSection.appendChild(logoCircle);
-		}
-		
-		// Add logo text
-		const logoText = document.createElement('div');
-		logoText.className = 'logo-text';
-		logoText.textContent = 'Lottery';
-		logoSection.appendChild(logoText);
-		
-		// Add logo section to left section
-		leftSection.appendChild(logoSection);
-		
-		// Create right section for user info and menu
-		const rightSection = document.createElement('div');
-		rightSection.className = 'topbar-right';
-		
-		// Find existing user info
-		const existingUserInfo = topbar.querySelector('.user-info');
-		if (existingUserInfo) {
-			// Process user info
-			const userName = existingUserInfo.querySelector('.user-name');
-			const userBalance = existingUserInfo.querySelector('.user-balance');
-			
-			if (userBalance) {
-				const balanceText = userBalance.textContent;
-				
-				// If there's a balance, reformat it with an icon
-				if (balanceText.includes('Balance:')) {
-					const balanceValue = balanceText.replace('Balance:', '').trim();
-
-					userBalance.innerHTML = 
-						`<span class="balance-icon">៛</span> ${balanceValue} / 0$
-						<span class="khmer-text">ពាក់យហ្គេម</span>`;
-				}
-			}
-			
-			rightSection.appendChild(existingUserInfo);
-		}
-		
-		// Add menu button
-		const menuButton = document.createElement('button');
-		menuButton.className = 'menu-button';
-		menuButton.setAttribute('aria-label', 'Menu');
-		
-		// Add three dots
-		for (let i = 0; i < 3; i++) {
-			const dot = document.createElement('div');
-			dot.className = 'menu-dot';
-			menuButton.appendChild(dot);
-		}
-		
-		rightSection.appendChild(menuButton);
-		
-		// Add sections to container
-		container.appendChild(leftSection);
-		container.appendChild(rightSection);
-		
-		// Clear topbar and add new container
-		while (topbar.firstChild) {
-			// Check if it's something we've already used
-			if (!existingBack || !topbar.firstChild.isEqualNode(existingBack)) {
-
-				if (!existingUserInfo || !topbar.firstChild.isEqualNode(existingUserInfo)) {
-					if (!existingLogo || !topbar.firstChild.isEqualNode(existingLogo)) {
-						topbar.removeChild(topbar.firstChild);
-					}
-				}
-			}
-		}
-		
-		// Add the container to the topbar
-		topbar.appendChild(container);
-	}
-	
-	// Call the function to enhance the topbar after DOM content is loaded
-	enhanceTopbar();
-	
-	// --- existing code follow ---
-
-	// initialize: ensure bet starts readonly and set initial UI state
-	setBetEditable(false);
-	updateInputModeUI();
-
-	// init
-	updatePreview();
-	renderCartPreview();
-	renderRecentList();
-}); // end DOMContentLoaded
-
