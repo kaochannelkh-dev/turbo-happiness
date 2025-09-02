@@ -1,0 +1,345 @@
+/* Battambang Font Styles */
+body, html {
+  font-family: "Battambang", system-ui, sans-serif;
+}
+
+/* Font Weight Classes */
+.battambang-thin {
+  font-family: "Battambang", system-ui;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.battambang-light {
+  font-family: "Battambang", system-ui;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.battambang-regular {
+  font-family: "Battambang", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.battambang-bold {
+  font-family: "Battambang", system-ui;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.battambang-black {
+  font-family: "Battambang", system-ui;
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* Apply the font to specific elements */
+input, button, select, textarea, label, div, span, p, h1, h2, h3, h4, h5, h6 {
+  font-family: "Battambang", system-ui, sans-serif;
+}
+
+/* Special elements might need specific styles */
+.key {
+  font-family: "Battambang", system-ui;
+  font-weight: 700;
+}
+
+.btn {
+  font-family: "Battambang", system-ui;
+  font-weight: 700;
+}
+
+/* Ticket Preview Styling */
+.ticket-preview {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ticket-preview-card {
+	max-width: 220px;
+	border: 2px solid #d6e6ff;
+	border-radius: 12px;
+	background: #fff;
+	color: #111;
+	overflow: hidden;
+}
+
+.ticket-preview-header {
+    padding: 6px 8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #eee;
+}
+
+.ticket-preview-content {
+    flex: 1;
+    overflow: auto;
+    padding: 8px 10px;
+}
+
+.ticket-preview-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+}
+
+.ticket-preview-empty .magnify {
+    font-size: 32px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.ticket-preview-item {
+    padding: 12px;
+    border-bottom: 1px dashed #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-preview-item {
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	padding: 4px 0;
+}
+
+.ticket-preview-value { display:flex; align-items:center; gap:6px; font-weight:700; }
+
+.preview-num { font-size:15px; color:#111; min-width:40px; }
+.multiplier-badge { color:#00a0e9; font-weight:800; margin-left:4px; }
+.sep { color:#222; margin-left:4px; margin-right:4px; }
+.preview-bet { color:#111; font-weight:700; }
+
+.remove-item {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.remove-item { background:transparent; border:none; color:#e74c3c; font-size:16px; cursor:pointer; padding:2px 6px; }
+
+.remove-item:hover {
+    opacity: 1;
+}
+
+/* Updated ticket preview footer styles */
+.ticket-preview-footer {
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+    border-top:1px solid #eee;
+}
+
+.bet-label, .letter-label, .total-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.bet-value {
+    color: #777;
+    font-weight: 600;
+}
+
+.letter-footer {
+    background-color: #e8f4fd;
+    border-top: 1px solid #d1e9fb;
+}
+
+.letter-value {
+    color: #2196f3;
+    font-weight: 600;
+}
+
+.total-footer {
+    background-color: #e9f7ef;
+    border-top: 1px solid #d5f0e5;
+    padding: 10px 12px;
+}
+
+.total-value {
+    color: #4caf50;
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+.ticket-preview-label {
+    font-weight: 800;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.ticket-preview-value {
+    color: #222;
+    font-size: 16px;
+}
+
+.preview-num {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.preview-bet {
+    color: #4caf50;
+    font-weight: 600;
+}
+
+.preview-letters {
+    margin-top: 6px;
+    color: #333;
+    font-weight: 600;
+}
+
+.ticket-preview-group {
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+}
+
+.ticket-preview-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.ticket-preview-label {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.ticket-preview-items {
+    padding-left: 12px;
+}
+
+.ticket-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.ticket-preview-value {
+    font-size: 15px;
+    color: #444;
+}
+
+.ticket-preview-group-total {
+    text-align: right;
+    font-weight: 600;
+    padding: 4px 0;
+    margin-top: 4px;
+    color: #4caf50;
+}
+
+/* Action buttons for ticket modal */
+.ticket-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ticket-actions .btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.ticket-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.ticket-actions .save-btn {
+    background-color: #4caf50;
+    color: white;
+}
+
+.ticket-actions .print-btn {
+    background-color: #2196f3;
+    color: white;
+}
+
+/* For the content that will be saved/printed */
+#ticketCapture {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Preview card adjustments to match reference */
+.ticket-preview-card {
+	max-width: 220px;
+	border: 2px solid #d6e6ff;
+	border-radius: 12px;
+	background: #fff;
+	color: #111;
+	overflow: hidden;
+}
+
+.ticket-preview-header {
+	padding: 6px 8px;
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	border-bottom:1px solid #eee;
+}
+
+.ticket-preview-content {
+	padding: 8px 10px;
+}
+
+.ticket-preview-label {
+	font-weight: 800;
+	font-size: 16px;
+	margin-bottom: 6px;
+}
+
+.ticket-preview-item {
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	padding: 4px 0;
+}
+
+.ticket-preview-value { display:flex; align-items:center; gap:6px; font-weight:700; }
+
+.preview-num { font-size:15px; color:#111; min-width:40px; }
+.multiplier-badge { color:#00a0e9; font-weight:800; margin-left:4px; }
+.sep { color:#222; margin-left:4px; margin-right:4px; }
+.preview-bet { color:#111; font-weight:700; }
+
+.remove-item { background:transparent; border:none; color:#e74c3c; font-size:16px; cursor:pointer; padding:2px 6px; }
+
+.ticket-preview-group-total { text-align:right; font-size:13px; color:#4caf50; margin-top:6px; }
+
+.ticket-preview-footer { padding:8px 10px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+.total-value { color:#4caf50; font-weight:800; }
+.dollar-value { color:#2196f3; font-weight:800; }
